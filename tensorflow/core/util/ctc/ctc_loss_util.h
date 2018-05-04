@@ -23,6 +23,7 @@ namespace tensorflow {
 namespace ctc {
 
 const float kLogZero = -std::numeric_limits<float>::infinity();
+const double kLogZero_d = -std::numeric_limits<double>::infinity();
 
 // Add logarithmic probabilities using:
 // ln(a + b) = ln(a) + ln(1 + exp(ln(b) - ln(a)))
@@ -33,6 +34,18 @@ inline float LogSumExp(float log_prob_1, float log_prob_2) {
   // blowing up.
   if (log_prob_1 == kLogZero && log_prob_2 == kLogZero) {
     return kLogZero;
+  } else {
+    return (log_prob_1 > log_prob_2)
+               ? log_prob_1 + log1pf(expf(log_prob_2 - log_prob_1))
+               : log_prob_2 + log1pf(expf(log_prob_1 - log_prob_2));
+  }
+}
+
+inline double LogSumExp(double log_prob_1, double log_prob_2) {
+  // Always have 'b' be the smaller number to avoid the exponential from
+  // blowing up.
+  if (log_prob_1 == kLogZero_d && log_prob_2 == kLogZero_d) {
+    return kLogZero_d;
   } else {
     return (log_prob_1 > log_prob_2)
                ? log_prob_1 + log1pf(expf(log_prob_2 - log_prob_1))
